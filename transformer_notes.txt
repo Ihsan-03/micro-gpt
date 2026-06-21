@@ -1,0 +1,15 @@
+Micro GPT Architecture
+
+Input Tokens
+      ↓
+Embedding Layer
+      ↓
+Positional Encoding
+      ↓
+Self Attention
+      ↓
+Feed Forward Layer
+      ↓
+Linear Output Layer
+      ↓
+Next Token Prediction

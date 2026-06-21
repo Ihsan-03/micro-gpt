@@ -1,0 +1,10 @@
+venv/
+**pycache**/
+*.pyc
+
+archive.zip
+
+data/chatbot_conversations.csv
+data/chatbot_conversations.json
+
+.DS_Store

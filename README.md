@@ -162,7 +162,7 @@ micro-gpt/
 Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/Ihsan-03/micro-gpt.git
 cd micro-gpt
 ```
 

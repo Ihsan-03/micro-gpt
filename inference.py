@@ -1,8 +1,7 @@
-
+import json
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import json
 
 with open("word_to_idx.json") as f:
     word_to_idx = json.load(f)
@@ -12,6 +11,7 @@ with open("idx_to_word.json") as f:
         int(k): v
         for k, v in json.load(f).items()
     }
+
 
 class MicroGPT(nn.Module):
     def __init__(self, vocab_size,
@@ -41,6 +41,7 @@ class MicroGPT(nn.Module):
         x = x[:, -1, :]
         return self.fc(x)
 
+
 model = MicroGPT(len(word_to_idx))
 
 model.load_state_dict(
@@ -52,45 +53,46 @@ model.load_state_dict(
 
 model.eval()
 
-prompt = input("Enter Prompt: ").lower()
 
-generated_words = prompt.split()
+def generate(prompt, max_new_tokens=15, k=5):
 
-tokens = [
-    word_to_idx[word]
-    for word in generated_words
-    if word in word_to_idx
-]
+    generated_words = prompt.lower().split()
 
-max_new_tokens = 15
+    tokens = [
+        word_to_idx[word]
+        for word in generated_words
+        if word in word_to_idx
+    ]
 
-for _ in range(max_new_tokens):
+    for _ in range(max_new_tokens):
 
-    input_tokens = tokens[-5:]
+        input_tokens = tokens[-5:]
 
-    while len(input_tokens) < 5:
-        input_tokens.insert(0, 0)
+        while len(input_tokens) < 5:
+            input_tokens.insert(0, 0)
 
-    x = torch.tensor([input_tokens])
+        x = torch.tensor([input_tokens])
 
-    with torch.no_grad():
-        logits = model(x)
+        with torch.no_grad():
+            logits = model(x)
 
-    probabilities = F.softmax(logits, dim=1)
+        probabilities = F.softmax(logits, dim=1)
 
-    k = 5
+        top_probs, top_indices = torch.topk(probabilities, k)
 
-    top_probs, top_indices = torch.topk(probabilities, k)
+        prediction = top_indices[
+            0,
+            torch.multinomial(top_probs[0], 1)
+        ].item()
 
-    prediction = top_indices[
-        0,
-        torch.multinomial(top_probs[0], 1)
-    ].item()
+        predicted_word = idx_to_word[prediction]
 
-    predicted_word = idx_to_word[prediction]
+        generated_words.append(predicted_word)
+        tokens.append(prediction)
 
-    generated_words.append(predicted_word)
-    tokens.append(prediction)
+    return " ".join(generated_words)
 
-print("\nGenerated Text:")
-print(" ".join(generated_words))
+
+if __name__ == "__main__":
+    prompt = input("Enter Prompt: ")
+    print(generate(prompt))

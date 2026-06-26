@@ -1,7 +1,6 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import json
 
 with open("word_to_idx.json") as f:
@@ -76,16 +75,7 @@ for _ in range(max_new_tokens):
     with torch.no_grad():
         logits = model(x)
 
-    probabilities = F.softmax(logits, dim=1)
-
-    k = 5
-
-    top_probs, top_indices = torch.topk(probabilities, k)
-
-    prediction = top_indices[
-        0,
-        torch.multinomial(top_probs[0], 1)
-    ].item()
+    prediction = torch.argmax(logits, dim=1).item()
 
     predicted_word = idx_to_word[prediction]
 

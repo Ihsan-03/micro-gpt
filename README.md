@@ -83,6 +83,10 @@ Statistics:
 * Top-k Sampling
 * Beam Search
 * Command Line Interface (CLI)
+* FastAPI REST API
+* OpenAI-Compatible API
+* OpenWebUI Integration
+* Modular Inference Pipeline
 
 ---
 
@@ -131,18 +135,63 @@ best deals today sure let me help you with that
 
 ```text
 micro-gpt/
+├── app.py
 ├── cli.py
+├── cli_greedy.py
+├── inference.py
 ├── tokenizer.py
 ├── positional_encoding.py
 ├── models/
 │   └── micro_gpt_model.pth
 ├── data/
 │   └── encoded_tokens.txt
+├── outputs/
 ├── word_to_idx.json
 ├── idx_to_word.json
+├── requirements.txt
 ├── README.md
 └── Notes.md
 ```
+
+---
+
+## Architecture
+
+The following diagram shows the complete workflow of the project, from preparing the dataset to interacting with the model through OpenWebUI.
+
+                 Dataset
+                     │
+                     ▼
+           Data Preprocessing
+                     │
+                     ▼
+              Tokenization
+                     │
+                     ▼
+          Vocabulary Creation
+                     │
+                     ▼
+         Transformer Model (PyTorch)
+                     │
+       
+              ▼
+       Trained Model (micro_gpt_model.pth)
+                     │
+        ┌────────────┴────────────┐
+        │                         │
+        ▼                         ▼
+     cli.py                 inference.py
+                                  │
+                                  ▼
+                              FastAPI Backend
+                                  │
+               ┌──────────────────┴──────────────────┐
+               │                                     │
+               ▼                                     ▼
+         /generate API                  OpenAI-Compatible API
+                                             │
+                                             ▼
+                                        OpenWebUI
 
 ---
 
@@ -153,6 +202,9 @@ micro-gpt/
 * NumPy
 * Pandas
 * Matplotlib
+* FastAPI
+* Uvicorn
+* OpenWebUI
 * Google Colab
 
 ---
@@ -176,7 +228,7 @@ source venv/bin/activate
 Install dependencies:
 
 ```bash
-pip install torch pandas numpy matplotlib
+pip install -r requirements.txt
 ```
 
 ---
@@ -199,6 +251,61 @@ Generated Word: sure
 
 ---
 
+## Running the FastAPI Server
+
+Start the API server:
+
+```bash
+python -m uvicorn app:app --reload
+```
+
+Once the server starts, it will be available at:
+
+```
+http://127.0.0.1:8000
+```
+
+Interactive API documentation:
+
+```
+http://127.0.0.1:8000/docs
+```
+
+---
+
+## API Endpoints
+
+The project exposes the following REST API endpoints:
+
+| Method | Endpoint               | Description                                |
+| ------ | ---------------------- | ------------------------------------------ |
+| GET    | `/`                    | Check if the API server is running         |
+| POST   | `/generate`            | Generate text from a prompt                |
+| GET    | `/v1/models`           | List available models                      |
+| POST   | `/v1/chat/completions` | OpenAI-compatible chat completion endpoint |
+
+---
+
+## OpenWebUI Integration
+
+The project can be connected to OpenWebUI using its OpenAI-compatible API.
+
+Configuration:
+
+**Base URL**
+
+```text
+http://127.0.0.1:8000/v1
+```
+
+**API Key**
+
+Since this project runs locally and does not implement authentication, any API key can be entered when configuring OpenWebUI.
+
+After adding the connection in OpenWebUI, the **micro-gpt** model will appear in the model list and can be used through the web interface.
+
+---
+
 ## Challenges Faced
 
 During development several challenges were encountered:
@@ -214,16 +321,29 @@ These challenges provided practical exposure development workflow.
 
 ---
 
+## Additional Enhancements
+
+After completing the core language model, I continued improving the project by adding a few new features and making the code easier to use and extend.
+
+* Moved the inference code into a separate inference.py file so it can be reused by different applications.
+* Built a FastAPI backend to interact with the model through REST APIs.
+* Added a simple text generation API (/generate).
+* Implemented OpenAI-compatible endpoints (/v1/models and /v1/chat/completions) so the model can work with OpenAI-supported tools.
+* Connected the model to OpenWebUI, allowing it to be used through a web-based chat interface.
+* Improved text generation by replacing greedy decoding with Top-k Sampling for more varied responses.
+
+
 ## Future Improvements
 
-* Larger dataset training
-* Better tokenizer
-* Longer text generation
-* OpenWebUI integration
-* Local chat interface
-* Improved transformer architecture
+* Train the model on a larger dataset.
+* Improve the tokenizer for better text generation.
+* Generate longer and more meaningful responses.
+* Improve the transformer model for better performance.
+* Allow users to fine-tune the model on their own datasets.
+* Add Docker support for easier setup and deployment.
+
+---
 
 ## Project Status
 
-Completed Successfully as part of a Machine Learning Internship project.
-
+Completed successfully as part of a Machine Learning Internship project and later enhanced with a FastAPI backend, OpenAI-compatible APIs and OpenWebUI integration.
